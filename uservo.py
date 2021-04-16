@@ -93,6 +93,8 @@ class UsInit:
             USERVO_PORT_NAME = max(device_list, key=lambda d: d[-1])
             logging.info('识别串口舵机的端口号: {}'.format(USERVO_PORT_NAME))
         return USERVO_PORT_NAME
+
+
 # 设置日志等级
 class Packet:
     '''数据包'''
