@@ -10,7 +10,77 @@ import time
 import logging
 import serial
 import struct
+import subprocess
+import os.path
 
+
+class UsInit:
+    """
+    系统日志等参数设置及舵机端口地址获取
+    """
+    LOG_INFO = ["INFO", "info", "Info", "iNfo", "inFo", "infO"]
+    LOG_WARNING = ["WARNING", "WARN", "warning", "warn", "Warning", "Warn"]
+    LOG_DEBUG = ["DEBUG", "debug", "Debug", "deBug", "de-bug"]
+
+    def __init__(self, logger_level='INFO', scan_servo_port=True, loggerLevelSetError=None):
+        self.__logger_level = logger_level
+        self.__scan_servo_port = scan_servo_port
+        self.__servo_port_name = None
+        self.__servo_id = None
+        self.__logger_set_err = loggerLevelSetError
+
+    def set_logging_mode(self):
+        try:
+            # 设置logging日志文件输出类型
+            if self.__logger_level in self.LOG_INFO:
+                # 创建一个logger_info
+                logger = logging.getLogger()
+                logger.setLevel(logging.INFO)  # Log等级总开关-info
+                print("Logging Set Info: logger.setLevel(logging.INFO)  # Log等级总开关-info")
+            elif self.__logger_level in self.LOG_WARNING:
+                # 创建一个logger_warning
+                logger = logging.getLogger()
+                logger.setLevel(logging.WARNING)  # Log等级总开关-warning
+                print("Logging Set Info: logger.setLevel(logging.WARNING)  # Log等级总开关-warning")
+            elif self.__logger_level in self.LOG_DEBUG:
+                # 创建一个logger_debug
+                logger = logging.getLogger()
+                logger.setLevel(logging.DEBUG)  # Log等级总开关-debug
+                print("Logging Set Info: logger.setLevel(logging.DEBUG)  # Log等级总开关-debug")
+            else:
+                print("Logging Set ERROR: logger.setLevel(logging.XXXX)")
+                print("Default mode is applied: logger.setLevel(logging.INFO) ")
+                logger = logging.getLogger()
+                logger.setLevel(logging.INFO)  # Log等级总开关-info
+        except self.__logger_set_err as e:
+            print("Logger Level Set Error")
+        finally:
+            print("Success：初始化logging日志文件输出类型完成")
+
+    def get_servo_port_name(self):
+        """
+        Returns:   USERVO_PORT_NAME  string type
+        :  USERVO_PORT_NAME = '/dev/ttyUSB0'
+        """
+        USERVO_PORT_NAME = ''
+        ## 如果是Windows操作系统　串口设备号
+        # USERVO_PORT_NAME = 'COM8'
+
+        ## Linux开发平台 串口设备号
+        # USERVO_PORT_NAME = '/dev/ttyUSB0'
+        # 如果设备号没有制定, 在Linux平台下,自动进行端口扫描
+        if len(USERVO_PORT_NAME) == 0 and self.__scan_servo_port:
+            # Linux平台下自动查询串口舵机转接板的设备号
+            res = subprocess.Popen("ls /dev/ttyUSB*", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # 获取设备列表
+            device_list = res.stdout.read().decode('utf-8').split()
+            if len(device_list) == 0:
+                logging.warning('[Error]请插入串口舵机转接板, 或检查电源')
+                exit(-1)
+            # 始终选择最后插入的那个设备
+            USERVO_PORT_NAME = max(device_list, key=lambda d: d[-1])
+            logging.info('识别串口舵机的端口号: {}'.format(USERVO_PORT_NAME))
+        return USERVO_PORT_NAME
 
 # 设置日志等级
 class Packet:
@@ -238,28 +308,28 @@ class UartServoManager:
     '''串口舵机管理器'''
     UPDATE_INTERVAL_MS = 10  # ms
     # 指令定义
-    CODE_PING = 1       # 舵机检测
-    CODE_QUERY_SERVO_ANGLE = 10         # 查询舵机的角度
-    CODE_QUERY_SERVO_ANGLE_MTURN = 16   # 查询舵机角度(多圈)
-    CODE_QUERY_SERVO_INFO = 5   # 查询舵机所有的信息 (未使用)
-    CODE_SET_SERVO_ANGLE = 8    # 设置舵机角度
-    CODE_SET_SPIN = 7           # 设置轮式模式
-    CODE_SET_DAMPING = 9        # 设置阻尼模式
-    CODE_SET_SERVO_ANGLE_BY_INTERVAL = 11   # 角度设置(指定周期)
-    CODE_SET_SERVO_ANGLE_BY_VELOCITY = 12   # 角度设置(指定转速)
-    CODE_SET_SERVO_ANGLE_MTURN = 13         # 多圈角度设置
+    CODE_PING = 1  # 舵机检测
+    CODE_QUERY_SERVO_ANGLE = 10  # 查询舵机的角度
+    CODE_QUERY_SERVO_ANGLE_MTURN = 16  # 查询舵机角度(多圈)
+    CODE_QUERY_SERVO_INFO = 5  # 查询舵机所有的信息 (未使用)
+    CODE_SET_SERVO_ANGLE = 8  # 设置舵机角度
+    CODE_SET_SPIN = 7  # 设置轮式模式
+    CODE_SET_DAMPING = 9  # 设置阻尼模式
+    CODE_SET_SERVO_ANGLE_BY_INTERVAL = 11  # 角度设置(指定周期)
+    CODE_SET_SERVO_ANGLE_BY_VELOCITY = 12  # 角度设置(指定转速)
+    CODE_SET_SERVO_ANGLE_MTURN = 13  # 多圈角度设置
     CODE_SET_SERVO_ANGLE_MTURN_BY_INTERVAL = 14  # 多圈角度设置(指定周期)
     CODE_SET_SERVO_ANGLE_MTURN_BY_VELOCITY = 15  # 多圈角度设置(指定转速)
-    CODE_RESET_USER_DATA = 2        # 用户表数据重置
-    CODE_READ_DATA = 3              # 读取内存表
-    CODE_WRITE_DATA = 4             # 写入内存表
+    CODE_RESET_USER_DATA = 2  # 用户表数据重置
+    CODE_READ_DATA = 3  # 读取内存表
+    CODE_WRITE_DATA = 4  # 写入内存表
     # 响应数据包黑名单
     RESPONSE_CODE_NEGLECT = []
     # 定义轮式控制的四种控制方法
-    WHEEL_MODE_STOP = 0x00      # 停止
-    WHEEL_MODE_NORMAL = 0x01    # 常规模式
-    WHEEL_MODE_TURN = 0x02      # 定圈
-    WHEEL_MODE_TIME = 0x03      # 定时
+    WHEEL_MODE_STOP = 0x00  # 停止
+    WHEEL_MODE_NORMAL = 0x01  # 常规模式
+    WHEEL_MODE_TURN = 0x02  # 定圈
+    WHEEL_MODE_TIME = 0x03  # 定时
     # 内存表
     ADDRESS_VOLTAGE = 1
     ADDRESS_CURRENT = 2
@@ -335,11 +405,11 @@ class UartServoManager:
         servo_id, = struct.unpack('<B', param_bytes)
         if servo_id not in self.servos:
             self.servos[servo_id] = UartServoInfo(servo_id)
-            self.servos[servo_id].is_online = True      # 设置舵机在线的标志位
+            self.servos[servo_id].is_online = True  # 设置舵机在线的标志位
             if self.is_debug or with_logging_info:
                 logging.info('[fs_uservo]ECHO 添加一个新的舵机 id={}'.format(servo_id))
         else:
-            self.servos[servo_id].is_online = True      # 设置舵机在线的标志位
+            self.servos[servo_id].is_online = True  # 设置舵机在线的标志位
             if self.is_debug or with_logging_info:
                 logging.info('[fs_uservo]ECHO 已知舵机 id={}'.format(servo_id))
 
@@ -407,7 +477,7 @@ class UartServoManager:
                 # 每隔100ms查询一次
                 time.sleep(0.05)
 
-    def query_srv_info(self, servo_id, with_logging_info = False):
+    def query_srv_info(self, servo_id, with_logging_info=False):
         '''查询单个舵机的所有配置'''
         self.send_request(self.CODE_QUERY_SERVO_INFO, struct.pack('<B', servo_id))
         if with_logging_info:
