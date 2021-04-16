@@ -1,3 +1,22 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+'''
+@Copyright:  Jihua Lab 2021.
+@File    :   ping_debug.py    
+@Author :   HaoWANG, Foshan，China
+@Contact :   wanghao@jihualab.com
+@License :   JHL ( not BSD)
+
+@Description:  
+
+
+@Create Time   :   2021/4/16  10:56
+@Modify Time      @Author    @Version    @Desciption
+------------      -------    --------    -----------
+2021/4/16 10:56   wanghao      1.1.0         None
+'''
+
+# import lib
 
 # 添加uservo.py的系统路径
 import sys
@@ -16,8 +35,10 @@ SERVO_PORT_NAME = ''  # 舵机串口号
 SERVO_BAUDRATE = 115200  # 舵机的波特率
 SERVO_ID = 0  # 舵机的ID号
 
-# 自动获取舵机串口号
-sys_init = UsInit()
+# 初始化并自动获取舵机串口号
+uservo_init = UsInit(logger_level="INFO",scan_servo_port=True)
+uservo_init.set_logging_mode()
+SERVO_PORT_NAME = uservo_init.get_servo_port_name()
 
 # 初始化串口
 uart = serial.Serial(port=SERVO_PORT_NAME, baudrate=SERVO_BAUDRATE, \
