@@ -334,8 +334,8 @@ class UartServoManager:
     CODE_SET_SERVO_ANGLE_MTURN_BY_INTERVAL = 14  # 多圈角度设置(指定周期)
     CODE_SET_SERVO_ANGLE_MTURN_BY_VELOCITY = 15  # 多圈角度设置(指定转速)
     CODE_RESET_USER_DATA = 2  # 用户表数据重置
-    CODE_READ_DATA = 3  # 读取内存表
-    CODE_WRITE_DATA = 4  # 写入内存表
+    CODE_READ_DATA = 3      # 读取内存表
+    CODE_WRITE_DATA = 4     # 写入内存表
     # 响应数据包黑名单
     RESPONSE_CODE_NEGLECT = []
     # 定义轮式控制的四种控制方法

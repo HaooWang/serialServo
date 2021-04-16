@@ -18,7 +18,7 @@ from uservo import UartServoManager
 
 # 参数配置
 # 角度定义
-SERVO_PORT_NAME =  'COM7' # 舵机串口号
+SERVO_PORT_NAME =  'COM3' # 舵机串口号
 SERVO_BAUDRATE = 115200 # 舵机的波特率
 SERVO_ID = 0  # 舵机的ID号
 # 数据表定义
@@ -29,7 +29,7 @@ uart = serial.Serial(port=SERVO_PORT_NAME, baudrate=SERVO_BAUDRATE,\
 					 parity=serial.PARITY_NONE, stopbits=1,\
 					 bytesize=8,timeout=0)
 # 初始化舵机管理器
-uservo = UartServoManager(uart)
+uservo = UartServoManager(uart,is_scan_servo=True,is_debug=True)
 
 # 内存表读取
 # 注: 因为每个数据位数据格式各不相同

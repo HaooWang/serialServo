@@ -17,7 +17,7 @@ from uservo import UartServoManager
 
 # 参数配置
 # 角度定义
-SERVO_PORT_NAME =  'COM7' # 舵机串口号
+SERVO_PORT_NAME =  'COM3' # 舵机串口号
 SERVO_BAUDRATE = 115200 # 舵机的波特率
 SERVO_ID = 0  # 舵机的ID号
 

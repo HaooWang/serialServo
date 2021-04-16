@@ -17,7 +17,7 @@ from uservo import UartServoManager
 
 # 参数配置
 # 角度定义
-SERVO_PORT_NAME =  'COM7' # 舵机串口号
+SERVO_PORT_NAME =  'COM3' # 舵机串口号
 SERVO_BAUDRATE = 115200 # 舵机的波特率
 SERVO_ID = 0  # 舵机的ID号
 
@@ -26,27 +26,36 @@ uart = serial.Serial(port=SERVO_PORT_NAME, baudrate=SERVO_BAUDRATE,\
 					 parity=serial.PARITY_NONE, stopbits=1,\
 					 bytesize=8,timeout=0)
 # 初始化舵机管理器
-uservo = UartServoManager(uart)
+uservo = UartServoManager(uart,is_debug=True)
 
+# 舵机扫描
+print("开始进行舵机扫描")
+uservo.scan_servo()
+servo_list = list(uservo.servos.keys())
+for SERVO_ID in servo_list:
+	is_online = uservo.ping(SERVO_ID,with_logging_info=True)
+	print("舵机ID={} 是否在线: {}".format(SERVO_ID, is_online))
+print("舵机扫描结束, 舵机列表: {}".format(servo_list))
 print("测试常规模式")
 
 # 设置舵机为轮式普通模式
 # 旋转方向(is_cw) : 顺时针
 # 角速度(mean_dps) : 单位°/s
-uservo.set_wheel_norm(SERVO_ID, is_cw=True, mean_dps=200.0)
+for SERVO_ID in servo_list:
+	uservo.set_wheel_norm(SERVO_ID, is_cw=True, mean_dps=200.0)
 
-# 延时5s然后关闭
-time.sleep(5.0)
+	# 定圈模式
+	print("测试定圈模式")
+	uservo.set_wheel_turn(SERVO_ID, turn=5, is_cw=False, mean_dps=200.0)
 
-# 轮子停止
-uservo.wheel_stop(SERVO_ID)
+	# 轮子定时模式
+	print("测试定时模式")
+	uservo.set_wheel_time(SERVO_ID, interval=5000, is_cw=True, mean_dps=200.0)
 
-time.sleep(1)
+	# 延时5s然后关闭
+	time.sleep(2.0)
 
-# 定圈模式
-print("测试定圈模式")
-uservo.set_wheel_turn(SERVO_ID, turn=5, is_cw=False, mean_dps=200.0)
+	# 轮子停止
+	uservo.wheel_stop(SERVO_ID)
 
-# 轮子定时模式
-print("测试定时模式")
-uservo.set_wheel_time(SERVO_ID, interval=5000, is_cw=True, mean_dps=200.0)
+	time.sleep(1)
