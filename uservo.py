@@ -1,11 +1,23 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
 '''
-Fashion Star 串口舵机Python SDK
---------------------------------------------------
-- 作者: haowang
-- Email: wanghao@jihualab.com
-- 更新时间: 2021-04-14
---------------------------------------------------
+@Copyright:  Jihua Lab 2021.
+@File    :   uservo.py.py    
+@Author :   HaoWANG, Foshan，China
+@Contact :   wanghao@jihualab.com
+@License :   JHL ( not BSD)
+
+@Description:  
+
+
+@Create Time   :   2021/4/16  16:09
+@Modify Time      @Author    @Version    @Desciption
+------------      -------    --------    -----------
+2021/4/16 16:09   wanghao      1.1.0         None
 '''
+
+# import lib
+
 import time
 import logging
 import serial
@@ -377,7 +389,7 @@ class UartServoManager:
             logging.error('串口数据发送异常, 请检查是否是USB口松动或设备号变更, 需重新初始化该机械臂')
         # TODO 添加掉线检查
 
-    def ping(self, servo_id: int, with_logging_info=False):
+    def ping(self, servo_id, with_logging_info=False):
         '''发送Ping请求'''
         # self.cur_ping_servo_id = servo_id #　为了可视化显示
         self.send_request(self.CODE_PING, struct.pack('<B', servo_id))
